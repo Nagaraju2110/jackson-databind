@@ -1,30 +1,14 @@
-name: Build and Push Docker image
+# Use a lightweight OpenJDK image
+FROM openjdk:17-jdk-slim
 
-on:
-  push:
-    branches: [ main ]
+# Set working directory inside container
+WORKDIR /app
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+# Copy the built JAR from local machine into container
+COPY target/*.jar app.jar
 
-    permissions:
-      contents: read
-      packages: write
+# Expose the port your app runs on (optional)
+EXPOSE 8080
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository_owner }}/your-image-name:latest .
-
-      - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository_owner }}/your-image-name:latest
+# Run the JAR
+ENTRYPOINT ["java", "-jar", "app.jar"]
